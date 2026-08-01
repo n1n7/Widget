@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nhắc việc ✨</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:linear-gradient(135deg,#fce4ec,#f3e5f5,#e8eaf6); min-height:100vh; font-family:'Plus Jakarta Sans',sans-serif; display:flex; align-items:flex-start; justify-content:center; padding:24px 16px; }
+.app { width:100%; max-width:460px; }
+.header { margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; }
+.header h1 { font-size:18px; font-weight:700; color:#4a235a; }
+.now { font-size:12px; color:#b39ddb; letter-spacing:.05em; }
+.add-box { background:#ffffff; border:1.5px solid #f0c0e0; border-radius:20px; padding:18px; margin-bottom:20px; position:relative; }
+.add-box.editing { border-color:#ab47bc; }
+.form-title { font-size:13px; font-weight:600; color:#ab47bc; margin-bottom:12px; }
+.field { margin-bottom:10px; }
+.field label { font-size:11px; color:#b39ddb; letter-spacing:.08em; text-transform:uppercase; display:block; margin-bottom:5px; }
+input[type=text], input[type=number], input[type=date], select { width:100%; background:#fff8fe; border:1.5px solid #f0c0e0; border-radius:12px; padding:11px 14px; color:#4a235a; font-size:14px; font-family:inherit; outline:none; transition:border .2s; }
+input:focus, select:focus { border-color:#ab47bc; }
+input::placeholder { color:#ce93d8; }
+select option { background:#ffffff; }
+.row2 { display:flex; gap:8px; }
+.row2 > * { flex:1; }
+.time-row { display:flex; gap:6px; align-items:center; }
+.time-row input[type=number] { text-align:center; }
+.time-sep { color:#b39ddb; font-size:18px; font-weight:700; flex-shrink:0; }
+.repeat-row { display:flex; gap:8px; align-items:center; }
+.repeat-row input[type=number] { width:70px; flex:none; }
+.repeat-row select { flex:1; }
+.btn-row { display:flex; gap:8px; margin-top:4px; }
+.add-btn { flex:1; padding:12px; background:linear-gradient(135deg,#ab47bc,#7b1fa2); border:none; border-radius:12px; color:white; font-size:14px; font-weight:600; font-family:inherit; cursor:pointer; transition:opacity .2s; }
+.add-btn:hover { opacity:.85; }
+.cancel-btn { padding:12px 16px; background:#f8e0f0; border:none; border-radius:12px; color:#ab47bc; font-size:14px; font-weight:600; font-family:inherit; cursor:pointer; transition:opacity .2s; display:none; }
+.cancel-btn:hover { opacity:.85; }
+.section-label { font-size:11px; color:#b39ddb; letter-spacing:.1em; text-transform:uppercase; margin-bottom:10px; }
+.reminders { display:flex; flex-direction:column; gap:8px; margin-bottom:20px; }
+.reminder-card { background:#ffffff; border:1.5px solid #f0c0e0; border-radius:16px; padding:14px 16px; display:flex; align-items:center; gap:10px; transition:all .3s; }
+.reminder-card.ringing { border-color:#f06292; background:#fff0f5; animation:ring-pulse .5s ease-in-out infinite alternate; }
+.reminder-card.done { opacity:.4; }
+@keyframes ring-pulse { from{box-shadow:0 0 0 0 rgba(255,154,122,.3)} to{box-shadow:0 0 0 8px rgba(255,154,122,0)} }
+.r-icon { font-size:22px; flex-shrink:0; width:34px; text-align:center; }
+.r-info { flex:1; min-width:0; }
+.r-title { font-size:14px; font-weight:600; color:#4a235a; margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.r-meta { font-size:11px; color:#b39ddb; display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+.badge { background:#f8e0f0; border-radius:6px; padding:2px 7px; font-size:10px; color:#ab47bc; white-space:nowrap; }
+.badge.daily { color:#388e3c; background:#e8f5e9; }
+.badge.once { color:#e65100; background:#fff3e0; }
+.badge.interval { color:#1565c0; background:#e3f2fd; }
+.time-left { font-size:12px; font-weight:700; color:#ab47bc; flex-shrink:0; text-align:right; min-width:44px; }
+.time-left.soon { color:#f06292; }
+.card-actions { display:flex; gap:2px; flex-shrink:0; }
+.edit-btn { background:none; border:none; color:#ce93d8; cursor:pointer; font-size:14px; padding:4px 6px; transition:color .2s; }
+.edit-btn:hover { color:#ab47bc; }
+.delete-btn { background:none; border:none; color:#ce93d8; cursor:pointer; font-size:14px; padding:4px 6px; transition:color .2s; }
+.delete-btn:hover { color:#f06292; }
+.popup-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:100; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.popup-overlay.show { display:flex; }
+.popup { background:#ffffff; border:1px solid #ab47bc44; border-radius:24px; padding:32px 28px; max-width:320px; width:90%; text-align:center; animation:popup-in .3s cubic-bezier(.34,1.56,.64,1); }
+@keyframes popup-in { from{transform:scale(.8);opacity:0} to{transform:scale(1);opacity:1} }
+.popup-emoji { font-size:48px; margin-bottom:12px; }
+.popup-title { font-size:11px; color:#ab47bc; letter-spacing:.1em; text-transform:uppercase; margin-bottom:8px; }
+.popup-task { font-size:20px; font-weight:700; color:#4a235a; margin-bottom:6px; line-height:1.3; }
+.popup-time { font-size:13px; color:#b39ddb; margin-bottom:24px; }
+.popup-dismiss { background:linear-gradient(135deg,#ab47bc,#7b1fa2); border:none; border-radius:12px; padding:12px 32px; color:white; font-size:14px; font-weight:600; font-family:inherit; cursor:pointer; width:100%; }
+.empty { text-align:center; padding:32px; color:#ce93d8; font-size:13px; }
+.empty-icon { font-size:32px; margin-bottom:8px; }
+.repeat-detail { display:none; }
+.repeat-detail.show { display:block; }
+.emoji-field { display:flex; gap:10px; align-items:center; margin-bottom:10px; }
+.emoji-preview { font-size:26px; width:48px; height:48px; background:#fff8fe; border:1.5px solid #f0c0e0; border-radius:12px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; transition:border .2s; user-select:none; }
+.emoji-preview:hover { border-color:#ab47bc; }
+.emoji-label { font-size:11px; color:#b39ddb; letter-spacing:.08em; text-transform:uppercase; }
+.emoji-picker-wrap { position:relative; }
+.emoji-picker-box { position:absolute; top:56px; left:0; z-index:200; background:#ffffff; border:1.5px solid #f0c0e0; border-radius:16px; padding:12px; box-shadow:0 8px 32px rgba(0,0,0,.6); width:290px; }
+.emoji-picker-box.hidden { display:none; }
+.emoji-cats { display:flex; gap:5px; margin-bottom:8px; flex-wrap:wrap; }
+.emoji-cat-btn { background:#fff8fe; border:1.5px solid #f0c0e0; border-radius:8px; padding:3px 8px; font-size:11px; color:#ab47bc; cursor:pointer; transition:all .15s; }
+.emoji-cat-btn.active { background:#ab47bc22; border-color:#ab47bc; }
+.emoji-grid { display:grid; grid-template-columns:repeat(8,1fr); gap:3px; max-height:150px; overflow-y:auto; }
+.emoji-btn { background:none; border:none; font-size:20px; cursor:pointer; padding:4px; border-radius:8px; transition:background .15s; }
+.emoji-btn:hover { background:#f8e0f0; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>✨ Nhắc việc</h1>
+    <div class="now" id="now-time"></div>
+  </div>
+
+  <div class="add-box" id="add-box">
+    <div class="form-title" id="form-title">+ Thêm nhắc việc mới</div>
+    <div class="emoji-field">
+      <div class="emoji-picker-wrap">
+        <div class="emoji-preview" id="emoji-preview" onclick="togglePicker()">🌸</div>
+        <div class="emoji-picker-box hidden" id="emoji-picker">
+          <div class="emoji-cats" id="emoji-cats"></div>
+          <div class="emoji-grid" id="emoji-grid"></div>
+        </div>
+      </div>
+      <div>
+        <div class="emoji-label">Icon</div>
+        <div style="font-size:12px;color:#ce93d8;margin-top:2px">Nhấn để chọn</div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Tên việc</label>
+      <input type="text" id="task-input" placeholder="Ví dụ: Uống nước 💧" maxlength="60">
+    </div>
+    <div class="field">
+      <label>Giờ nhắc</label>
+      <div class="time-row">
+        <input type="number" id="hour-input" min="0" max="23" placeholder="GIỜ">
+        <span class="time-sep">:</span>
+        <input type="number" id="min-input" min="0" max="59" placeholder="PHÚT">
+      </div>
+    </div>
+    <div class="field">
+      <label>Kiểu nhắc</label>
+      <select id="repeat-type" onchange="onRepeatChange()">
+        <option value="once">1 lần duy nhất</option>
+        <option value="daily">Hằng ngày</option>
+        <option value="fixed">Ngày cố định</option>
+        <option value="interval_min">Lặp theo phút</option>
+        <option value="interval_hour">Lặp theo giờ</option>
+        <option value="interval_day">Lặp theo ngày</option>
+        <option value="monthly">Hằng tháng</option>
+        <option value="yearly">Hằng năm</option>
+      </select>
+    </div>
+    <div class="field repeat-detail" id="detail-fixed">
+      <label>Chọn ngày</label>
+      <input type="date" id="fixed-date">
+    </div>
+    <div class="field repeat-detail" id="detail-interval-min">
+      <label>Mỗi bao nhiêu phút?</label>
+      <div class="repeat-row">
+        <input type="number" id="interval-min-val" min="1" max="59" value="30">
+        <select disabled style="color:#5a5a7a"><option>phút nhắc 1 lần</option></select>
+      </div>
+    </div>
+    <div class="field repeat-detail" id="detail-interval-hour">
+      <label>Mỗi bao nhiêu tiếng?</label>
+      <div class="repeat-row">
+        <input type="number" id="interval-hour-val" min="1" max="23" value="2">
+        <select disabled style="color:#5a5a7a"><option>tiếng nhắc 1 lần</option></select>
+      </div>
+    </div>
+    <div class="field repeat-detail" id="detail-interval-day">
+      <label>Mỗi bao nhiêu ngày?</label>
+      <div class="repeat-row">
+        <input type="number" id="interval-day-val" min="1" value="1">
+        <select disabled style="color:#5a5a7a"><option>ngày nhắc 1 lần</option></select>
+      </div>
+    </div>
+    <div class="field repeat-detail" id="detail-monthly">
+      <label>Ngày trong tháng</label>
+      <input type="number" id="monthly-day" min="1" max="31" placeholder="VD: 15">
+    </div>
+    <div class="field repeat-detail" id="detail-yearly">
+      <label>Ngày & tháng trong năm</label>
+      <div class="row2">
+        <input type="number" id="yearly-day" min="1" max="31" placeholder="Ngày">
+        <input type="number" id="yearly-month" min="1" max="12" placeholder="Tháng">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="add-btn" id="submit-btn" onclick="submitReminder()">+ Thêm nhắc việc</button>
+      <button class="cancel-btn" id="cancel-btn" onclick="cancelEdit()">Huỷ</button>
+    </div>
+  </div>
+
+  <div class="section-label">Danh sách nhắc việc</div>
+  <div class="reminders" id="reminders-list">
+    <div class="empty"><div class="empty-icon">📭</div>Chưa có việc gì nha chế!</div>
+  </div>
+</div>
+
+<div class="popup-overlay" id="popup">
+  <div class="popup">
+    <div class="popup-emoji">🔔</div>
+    <div class="popup-title">Đến giờ rồi!</div>
+    <div class="popup-task" id="popup-task"></div>
+    <div class="popup-time" id="popup-time"></div>
+    <button class="popup-dismiss" onclick="dismissPopup()">Okie bé ơi! ✨</button>
+  </div>
+</div>
+
+<script>
+const EMOJI_CATS = {
+  '❤️ Yêu': ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','💕','💞','💓','💗','💖','💝','💘'],
+  '😊 Mặt': ['😊','😍','🥰','😘','😁','😂','🤣','😅','😇','🥳','😎','🤩','😴','😋','🤤'],
+  '🌸 Cute': ['🌸','🌺','🌻','🌹','🌷','🌼','🍀','🌿','🍃','🦋','🐱','🐶','🐰','🐼','🦄'],
+  '✨ Shine': ['✨','⭐','🌟','💫','🔥','💎','👑','🎀','🎵','🎶','🎯','🎉','🎊','🏆','💡'],
+  '🍵 Food': ['🍵','☕','🧋','🍰','🍩','🍪','🍓','🍑','🥑','🍜','🍱','🍣','🧁','🍫','🍭'],
+  '💪 Work': ['💪','📚','✏️','📝','💻','📱','⏰','📅','🗓️','📌','🔔','💬','📧','🗂️','🏃'],
+  '🏠 Life': ['🏠','🛁','🌙','☀️','🌈','⛅','🌊','🏖️','🎮','🎬','🛒','💊','💧','🏋️','🧘'],
+};
+
+let selectedEmoji = '🌸';
+let currentCat = Object.keys(EMOJI_CATS)[0];
+let pickerOpen = false;
+let reminders = JSON.parse(localStorage.getItem('reminders_v3_light') || '[]');
+let activePopup = null;
+let checked = {};
+let editingId = null;
+
+function pad(n){return String(n).padStart(2,'0');}
+
+function buildPicker() {
+  document.getElementById('emoji-cats').innerHTML = Object.keys(EMOJI_CATS).map(c =>
+    `<button class="emoji-cat-btn ${c===currentCat?'active':''}" onclick="setCat('${c}')">${c}</button>`
+  ).join('');
+  document.getElementById('emoji-grid').innerHTML = EMOJI_CATS[currentCat].map(e =>
+    `<button class="emoji-btn" onclick="pickEmoji('${e}')">${e}</button>`
+  ).join('');
+}
+
+function setCat(cat) { currentCat=cat; buildPicker(); }
+function pickEmoji(e) { selectedEmoji=e; document.getElementById('emoji-preview').textContent=e; closePicker(); }
+function togglePicker() { pickerOpen=!pickerOpen; document.getElementById('emoji-picker').classList.toggle('hidden',!pickerOpen); if(pickerOpen)buildPicker(); }
+function closePicker() { pickerOpen=false; document.getElementById('emoji-picker').classList.add('hidden'); }
+document.addEventListener('click', e => { if(!e.target.closest('.emoji-picker-wrap'))closePicker(); });
+
+function onRepeatChange() {
+  const val=document.getElementById('repeat-type').value;
+  document.querySelectorAll('.repeat-detail').forEach(el=>el.classList.remove('show'));
+  const map={fixed:'detail-fixed',interval_min:'detail-interval-min',interval_hour:'detail-interval-hour',interval_day:'detail-interval-day',monthly:'detail-monthly',yearly:'detail-yearly'};
+  if(map[val])document.getElementById(map[val]).classList.add('show');
+}
+
+function getFormData() {
+  const task=document.getElementById('task-input').value.trim();
+  const h=document.getElementById('hour-input').value;
+  const m=document.getElementById('min-input').value;
+  const type=document.getElementById('repeat-type').value;
+  if(!task||h===''||m===''){alert('Chế điền tên việc và giờ nha! 😊');return null;}
+  const time=pad(parseInt(h))+':'+pad(parseInt(m));
+  const r={task,time,type,emoji:selectedEmoji,done:false};
+  if(type==='fixed'){const d=document.getElementById('fixed-date').value;if(!d){alert('Chế chọn ngày nha!');return null;}r.fixedDate=d;}
+  else if(type==='interval_min')r.intervalMin=parseInt(document.getElementById('interval-min-val').value)||30;
+  else if(type==='interval_hour')r.intervalHour=parseInt(document.getElementById('interval-hour-val').value)||2;
+  else if(type==='interval_day')r.intervalDay=parseInt(document.getElementById('interval-day-val').value)||1;
+  else if(type==='monthly'){const day=parseInt(document.getElementById('monthly-day').value);if(!day){alert('Nhập ngày trong tháng nha!');return null;}r.monthlyDay=day;}
+  else if(type==='yearly'){const day=parseInt(document.getElementById('yearly-day').value),month=parseInt(document.getElementById('yearly-month').value);if(!day||!month){alert('Nhập ngày và tháng nha!');return null;}r.yearlyDay=day;r.yearlyMonth=month;}
+  return r;
+}
+
+function submitReminder() {
+  const data=getFormData(); if(!data)return;
+  if(editingId) {
+    reminders=reminders.map(r=>r.id===editingId?{...data,id:editingId}:r);
+    editingId=null;
+  } else {
+    reminders.push({...data,id:Date.now()});
+  }
+  save(); render(); resetForm();
+}
+
+function editReminder(id) {
+  const r=reminders.find(x=>x.id===id); if(!r)return;
+  editingId=id;
+  selectedEmoji=r.emoji;
+  document.getElementById('emoji-preview').textContent=r.emoji;
+  document.getElementById('task-input').value=r.task;
+  const [h,m]=r.time.split(':');
+  document.getElementById('hour-input').value=parseInt(h);
+  document.getElementById('min-input').value=parseInt(m);
+  document.getElementById('repeat-type').value=r.type;
+  onRepeatChange();
+  if(r.type==='fixed')document.getElementById('fixed-date').value=r.fixedDate||'';
+  if(r.type==='interval_min')document.getElementById('interval-min-val').value=r.intervalMin||30;
+  if(r.type==='interval_hour')document.getElementById('interval-hour-val').value=r.intervalHour||2;
+  if(r.type==='interval_day')document.getElementById('interval-day-val').value=r.intervalDay||1;
+  if(r.type==='monthly')document.getElementById('monthly-day').value=r.monthlyDay||'';
+  if(r.type==='yearly'){document.getElementById('yearly-day').value=r.yearlyDay||'';document.getElementById('yearly-month').value=r.yearlyMonth||'';}
+  document.getElementById('add-box').classList.add('editing');
+  document.getElementById('form-title').textContent='✏️ Đang chỉnh sửa';
+  document.getElementById('submit-btn').textContent='💾 Lưu thay đổi';
+  document.getElementById('cancel-btn').style.display='block';
+  document.getElementById('add-box').scrollIntoView({behavior:'smooth'});
+}
+
+function cancelEdit() { editingId=null; resetForm(); }
+
+function resetForm() {
+  selectedEmoji='🌸';
+  document.getElementById('emoji-preview').textContent='🌸';
+  document.getElementById('task-input').value='';
+  document.getElementById('hour-input').value='';
+  document.getElementById('min-input').value='';
+  document.getElementById('repeat-type').value='once';
+  document.querySelectorAll('.repeat-detail').forEach(el=>el.classList.remove('show'));
+  document.getElementById('add-box').classList.remove('editing');
+  document.getElementById('form-title').textContent='+ Thêm nhắc việc mới';
+  document.getElementById('submit-btn').textContent='+ Thêm nhắc việc';
+  document.getElementById('cancel-btn').style.display='none';
+}
+
+function deleteReminder(id){reminders=reminders.filter(r=>r.id!==id);if(editingId===id)cancelEdit();save();render();}
+function save(){localStorage.setItem('reminders_v3_light',JSON.stringify(reminders));}
+
+function getBadge(r){
+  const map={once:'1 lần',daily:'Hằng ngày',fixed:'Ngày cố định',interval_min:`Mỗi ${r.intervalMin||30}p`,interval_hour:`Mỗi ${r.intervalHour||2}g`,interval_day:`Mỗi ${r.intervalDay||1} ngày`,monthly:`Ngày ${r.monthlyDay} hàng tháng`,yearly:`Ngày ${r.yearlyDay}/${r.yearlyMonth} hàng năm`};
+  const cls={once:'once',daily:'daily',fixed:'once',interval_min:'interval',interval_hour:'interval',interval_day:'interval',monthly:'daily',yearly:'daily'};
+  return `<span class="badge ${cls[r.type]||''}">${map[r.type]||r.type}</span>`;
+}
+
+function shouldFireToday(r){
+  const now=new Date();
+  if(r.type==='once'||r.type==='daily')return true;
+  if(r.type==='fixed')return new Date(r.fixedDate).toDateString()===now.toDateString();
+  if(r.type==='monthly')return now.getDate()===r.monthlyDay;
+  if(r.type==='yearly')return now.getDate()===r.yearlyDay&&now.getMonth()+1===r.yearlyMonth;
+  if(r.type==='interval_day'){const diff=Math.floor((now-new Date(r.id))/86400000);return diff%(r.intervalDay||1)===0;}
+  return true;
+}
+
+function getTimeLeft(r){
+  const now=new Date();
+  if(r.type==='interval_min'){
+    const interval=(r.intervalMin||30)*60000;
+    const ms=interval-(now-new Date(r.id))%interval;
+    const mins=Math.floor(ms/60000);
+    if(mins<1)return{text:'🔔 Ngay!',soon:true,ringing:true};
+    return{text:`${mins}p`,soon:mins<=5,ringing:false};
+  }
+  if(r.type==='interval_hour'){
+    const interval=(r.intervalHour||2)*3600000;
+    const ms=interval-(now-new Date(r.id))%interval;
+    const mins=Math.floor(ms/60000);
+    if(mins<1)return{text:'🔔 Ngay!',soon:true,ringing:true};
+    if(mins<60)return{text:`${mins}p`,soon:mins<=10,ringing:false};
+    return{text:`${Math.floor(mins/60)}g${mins%60>0?mins%60+'p':''}`,soon:false,ringing:false};
+  }
+  const [h,m]=r.time.split(':').map(Number);
+  const target=new Date(now);target.setHours(h,m,0,0);
+  if(target<=now)target.setDate(target.getDate()+1);
+  const ms=target-now;const mins=Math.floor(ms/60000);
+  if(mins<1)return{text:'🔔 Ngay!',soon:true,ringing:true};
+  if(mins<60)return{text:`${mins}p`,soon:mins<=10,ringing:false};
+  return{text:`${Math.floor(mins/60)}g${mins%60>0?mins%60+'p':''}`,soon:false,ringing:false};
+}
+
+function render(){
+  const list=document.getElementById('reminders-list');
+  if(!reminders.length){list.innerHTML='<div class="empty"><div class="empty-icon">📭</div>Chưa có việc gì nha chế!</div>';return;}
+  list.innerHTML=[...reminders].sort((a,b)=>a.time.localeCompare(b.time)).map(r=>{
+    const tl=getTimeLeft(r);const ringing=tl.ringing&&!r.done;const isDone=r.done&&r.type==='once';
+    const isEditing=editingId===r.id;
+    return `<div class="reminder-card ${ringing?'ringing':''} ${isDone?'done':''}" style="${isEditing?'border-color:#ab47bc':''}">
+      <div class="r-icon">${r.emoji}</div>
+      <div class="r-info"><div class="r-title">${r.task}</div><div class="r-meta">${r.time} ${getBadge(r)}</div></div>
+      <div class="time-left ${tl.soon?'soon':''}">${isDone?'✓':tl.text}</div>
+      <div class="card-actions">
+        <button class="edit-btn" onclick="editReminder(${r.id})" title="Chỉnh sửa">✏️</button>
+        <button class="delete-btn" onclick="deleteReminder(${r.id})" title="Xoá">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showPopup(r){
+  if(activePopup===r.id)return;activePopup=r.id;
+  document.getElementById('popup-task').textContent=r.emoji+' '+r.task;
+  document.getElementById('popup-time').textContent='⏰ '+r.time;
+  document.getElementById('popup').classList.add('show');
+  try{const ctx=new(window.AudioContext||window.webkitAudioContext)();[0,.15,.3].forEach(d=>{const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=880;o.type='sine';g.gain.setValueAtTime(.3,ctx.currentTime+d);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+d+.2);o.start(ctx.currentTime+d);o.stop(ctx.currentTime+d+.2);});}catch(e){}
+}
+
+function dismissPopup(){
+  document.getElementById('popup').classList.remove('show');
+  if(activePopup){reminders=reminders.map(r=>r.id===activePopup&&r.type==='once'?{...r,done:true}:r);save();}
+  activePopup=null;render();
+}
+
+function checkReminders(){
+  const now=new Date();const cur=pad(now.getHours())+':'+pad(now.getMinutes());
+  reminders.forEach(r=>{
+    if(r.done&&r.type==='once')return;
+    let fire=false;
+    if(r.type==='interval_min'||r.type==='interval_hour'){if(getTimeLeft(r).ringing)fire=true;}
+    else if(shouldFireToday(r)&&r.time===cur)fire=true;
+    if(fire){const key=r.id+'-'+cur+'-'+now.toDateString();if(!checked[key]){checked[key]=true;showPopup(r);}}
+  });
+}
+
+function updateClock(){const now=new Date();document.getElementById('now-time').textContent=pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());}
+render();updateClock();
+setInterval(()=>{updateClock();checkReminders();render();},1000);
+</script>
+</body>
+</html>
